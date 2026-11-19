@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Workflow Command Center</title>
+<style>
+:root{--bg:#080d18;--panel:#101827;--panel2:#131f31;--line:#24344b;--muted:#8ea1ba;--text:#e8f0fb;--cyan:#39d5ef;--violet:#a78bfa;--green:#36d399;--amber:#f6bd60;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1b3150 0,#0a1120 44%,var(--bg) 78%);color:var(--text);font:14px Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+.app{display:grid;grid-template-columns:238px minmax(0,1fr) 310px;grid-template-rows:66px 1fr;min-height:100vh;gap:0;transition:grid-template-columns .22s ease}.app.sidebar-collapsed{grid-template-columns:58px minmax(0,1fr) 310px}.app.inspector-collapsed{grid-template-columns:238px minmax(0,1fr) 0px}.app.sidebar-collapsed.inspector-collapsed{grid-template-columns:58px minmax(0,1fr) 0px}
+header{grid-column:1/4;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--line);background:#0b1321dd;backdrop-filter:blur(16px);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-weight:750;letter-spacing:.2px}.brandmark{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#29c5e7,#8468f6);display:grid;place-items:center;color:#06101c;font-size:18px;box-shadow:0 0 24px #39d5ef44}
+.header-right{display:flex;align-items:center;gap:16px;color:var(--muted);font-size:12px}.header-tools{display:flex;align-items:center;gap:7px;margin-left:auto;margin-right:16px}.panel-toggle{border:1px solid var(--line);background:#142238;color:#dce9f7;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:11px;white-space:nowrap}.panel-toggle:hover{border-color:var(--cyan);color:#fff}.panel-toggle[aria-pressed="true"]{background:#123342;border-color:#267b8e;color:#8cecff}.pill{border:1px solid var(--line);padding:7px 10px;border-radius:99px;background:#111d2e}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 10px currentColor}
+aside{background:#0b1320aa;border-right:1px solid var(--line);padding:20px 13px;overflow:auto}.section-label{font-size:10px;letter-spacing:1.5px;color:#667b97;font-weight:800;padding:14px 10px 8px}.nav{display:flex;align-items:center;gap:11px;padding:10px;border-radius:9px;color:#9fb0c7;margin:2px 0;cursor:pointer}.nav:hover,.nav.active{background:#17273b;color:#e9f5ff}.nav.active{box-shadow:inset 2px 0 var(--cyan)}.ico{width:19px;text-align:center;font-size:16px}.nav small{margin-left:auto;color:#60738e}.side-foot{margin-top:26px;border:1px solid var(--line);border-radius:12px;padding:13px;background:#101b2b}.side-foot strong{display:block;font-size:12px;margin:7px 0}.side-foot p{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+main{padding:22px;min-width:0;overflow:hidden}.pagehead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}.eyebrow{color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:1.7px}.pagehead h1{font-size:23px;margin:5px 0 4px;letter-spacing:-.5px}.sub{color:var(--muted);font-size:12px}.actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:#142238;color:#dce9f7;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:11px}.btn.primary{background:linear-gradient(100deg,#087f9a,#6252c8);border:0;color:white;font-weight:700}.btn:hover{filter:brightness(1.18)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:14px}.stat,.panel{background:linear-gradient(145deg,#121e30,#0e1828);border:1px solid var(--line);border-radius:12px}.stat{padding:13px 15px}.stat-top{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.stat-num{font-size:25px;font-weight:750;margin:9px 0 2px;letter-spacing:-.7px}.stat-foot{font-size:10px;color:#7186a2}.up{color:var(--green)}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--line)}.panel-head strong{font-size:12px}.panel-head span{color:var(--muted);font-size:10px}.graph{height:430px;position:relative;overflow:hidden;background-image:radial-gradient(#30435e 1px,transparent 1px);background-size:22px 22px;border-radius:0 0 12px 12px}
+.graph svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.edge{fill:none;stroke:#38516f;stroke-width:1.8;opacity:.9}.edge.active{stroke:var(--cyan);stroke-dasharray:7 7;animation:dash 1.1s linear infinite;filter:drop-shadow(0 0 4px #39d5ef)}@keyframes dash{to{stroke-dashoffset:-28}}
+.node{position:absolute;width:130px;min-height:76px;background:linear-gradient(145deg,#1a2a40,#111d2e);border:1px solid #344a65;border-radius:12px;padding:10px;cursor:pointer;box-shadow:0 12px 26px #0005;transition:.18s;z-index:2}.node:hover,.node.selected{border-color:var(--cyan);box-shadow:0 0 0 1px #39d5ef55,0 12px 28px #0007;transform:translateY(-2px)}.node .logo{font-size:20px;margin-bottom:5px}.node b{display:block;font-size:11px}.node small{font-size:9px;color:var(--muted)}.node .state{position:absolute;right:9px;top:10px;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}.node.demo .state{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.n-chat{left:5%;top:40%}.n-bridge{left:27%;top:40%}.n-opencode{left:50%;top:40%}.n-model{left:77%;top:12%}.n-mcp{left:77%;top:39%}.n-kali{left:77%;top:67%}
+.graph-legend{display:flex;gap:14px;padding:10px 14px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}.legend-dot{width:7px;height:7px;display:inline-block;border-radius:50%;margin-right:5px}
+.rightstack{display:flex;flex-direction:column;gap:12px}.mini{padding:14px}.mini h3{font-size:12px;margin:0 0 12px}.health{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1e2b3e;font-size:11px}.health:last-child{border:0}.health span:last-child{color:var(--green)}
+.event{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid #1e2b3e}.event:last-child{border:0}.event i{width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-top:4px;flex:none}.event b{font-size:10px;display:block}.event small{color:var(--muted);font-size:9px}
+.inspector{background:#0b1320;border-left:1px solid var(--line);padding:19px 16px;overflow:auto;min-width:0;transition:opacity .18s ease}.sidebar-collapsed aside{padding-left:7px;padding-right:7px}.sidebar-collapsed aside .section-label,.sidebar-collapsed aside .side-foot{display:none}.sidebar-collapsed aside .nav{justify-content:center;padding:11px 5px;font-size:0;gap:0}.sidebar-collapsed aside .nav .ico{font-size:17px}.sidebar-collapsed aside .nav small{display:none}.inspector-collapsed .inspector{display:none}.app.sidebar-collapsed.inspector-collapsed{grid-template-columns:58px minmax(0,1fr) 0px}.inspect-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}.inspect-title h2{font-size:13px;margin:0}.tag{font-size:9px;border-radius:5px;padding:4px 7px;background:#17372f;color:var(--green)}.selected-card{padding:14px;background:#121e30;border:1px solid var(--line);border-radius:12px;margin-bottom:14px}.selected-logo{font-size:27px}.selected-card h3{margin:7px 0 3px;font-size:15px}.selected-card p{margin:0;color:var(--muted);font-size:10px}.field{padding:10px 0;border-bottom:1px solid #1e2b3e}.field label{display:block;color:#7186a2;font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}.field span{font-size:11px}.logline{font:10px ui-monospace,monospace;color:#91a9c5;padding:5px 0}
+.composer{margin-top:13px;padding:12px;display:flex;gap:8px}.composer input{flex:1;min-width:0;background:#0b1422;border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--text);outline:none;font-size:11px}.composer input:focus{border-color:var(--cyan)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#152b3b;border:1px solid #2c6070;padding:10px 16px;border-radius:9px;color:#c9f4fa;font-size:11px;display:none;z-index:10}
+@media(max-width:1100px){.app{grid-template-columns:205px minmax(0,1fr) 280px}.app.sidebar-collapsed{grid-template-columns:58px minmax(0,1fr) 280px}.app.inspector-collapsed{grid-template-columns:205px minmax(0,1fr) 0}.app.sidebar-collapsed.inspector-collapsed{grid-template-columns:58px minmax(0,1fr) 0}.workspace{grid-template-columns:1fr}.rightstack{display:grid;grid-template-columns:1fr 1fr}.app header{grid-column:1/4}}
+@media(max-width:720px){.app{display:grid;grid-template-columns:0 minmax(0,1fr) 0;grid-template-rows:66px 1fr}.app.sidebar-open-mobile{grid-template-columns:205px minmax(0,1fr) 0}.app.inspector-open-mobile{grid-template-columns:0 minmax(0,1fr) 280px}.app.sidebar-open-mobile.inspector-open-mobile{grid-template-columns:205px minmax(0,1fr) 280px}.app aside{padding:12px 8px;overflow:auto}.app:not(.sidebar-open-mobile) aside{padding:0;border:0;overflow:hidden}.app:not(.inspector-open-mobile) .inspector{display:none}.app header{grid-column:1/4}header{position:sticky;top:0}.header-right .pill:nth-child(2){display:none}main{padding:15px}.stats{grid-template-columns:repeat(2,1fr)}.workspace{display:block}.rightstack{display:block;margin-top:12px}.graph{height:470px}.node{width:112px}.n-chat{left:3%;top:37%}.n-bridge{left:29%;top:37%}.n-opencode{left:55%;top:37%}.n-model{left:58%;top:7%}.n-mcp{left:58%;top:67%}.n-kali{left:58%;top:84%}.actions{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="brandmark">✣</div><div>AI WORKFLOW <span style="color:var(--cyan)">COMMAND CENTER</span></div></div><div class="header-tools"><button class="panel-toggle" id="toggleSidebar" aria-pressed="false" onclick="togglePanel('sidebar')" title="Contraer o abrir menú lateral">☰ Menú</button><button class="panel-toggle" id="toggleInspector" aria-pressed="false" onclick="togglePanel('inspector')" title="Contraer o abrir inspector">◫ Inspector</button></div><div class="header-right"><span class="pill">⌁ &nbsp; KALI DEVELOPMENT</span><span class="pill"><i class="dot"></i>Bridge not connected</span><span>◉ &nbsp; ADMIN</span></div></header>
+<aside>
+<div class="section-label">OPERATIONS</div>
+<div class="nav active"><span class="ico">◈</span> Command Center</div>
+<div class="nav"><span class="ico">⌘</span> Live Workflows <small>06</small></div>
+<div class="nav"><span class="ico">◷</span> Execution History</div>
+<div class="section-label">ADMINISTRATION</div>
+<div class="nav"><span class="ico">▣</span> Kali Linux</div>
+<div class="nav"><span class="ico">⌘</span> OpenCode</div>
+<div class="nav"><span class="ico">✧</span> AI Models</div>
+<div class="nav"><span class="ico">⇄</span> Providers & Connections</div>
+<div class="nav"><span class="ico">⬡</span> MCP Servers</div>
+<div class="nav"><span class="ico">⌬</span> Integrations</div>
+<div class="nav"><span class="ico">◉</span> Agents & Automation</div>
+<div class="nav"><span class="ico">▤</span> Audit & Maintenance</div>
+<div class="side-foot"><span class="tag" style="background:#3a3020;color:var(--amber)">DEMO MODE</span><strong>Local bridge pending</strong><p>Conecta un agente local seguro para habilitar telemetría y ejecución reales.</p></div>
+</aside>
+<main>
+<div class="pagehead"><div><div class="eyebrow">OPERATIONS OVERVIEW / 01</div><h1>AI Workflow Command Center</h1><div class="sub">Orquestación, conexiones y observabilidad de tu ecosistema de desarrollo.</div></div><div class="actions"><button class="btn" onclick="toast('Vista ajustada al mapa completo')">⊞ Fit view</button><button class="btn primary" onclick="toast('El puente local todavía no está conectado')">＋ New workflow</button></div></div>
+<div class="stats">
+<div class="stat"><div class="stat-top">Active workflows <span>⌁</span></div><div class="stat-num">03</div><div class="stat-foot"><span class="up">●</span> Datos de demostración</div></div>
+<div class="stat"><div class="stat-top">Connected services <span>◈</span></div><div class="stat-num">07</div><div class="stat-foot">Inventario ilustrativo</div></div>
+<div class="stat"><div class="stat-top">MCP servers <span>⬡</span></div><div class="stat-num">04</div><div class="stat-foot">No verificado en Kali</div></div>
+<div class="stat"><div class="stat-top">Failed operations <span>△</span></div><div class="stat-num">01</div><div class="stat-foot">Evento de ejemplo</div></div>
+</div>
+<div class="workspace">
+<div class="panel">
+<div class="panel-head"><strong>◈ &nbsp; LIVE WORKFLOW TOPOLOGY</strong><span><i class="dot"></i> DEMO TELEMETRY</span></div>
+<div class="graph" id="graph">
+<svg viewBox="0 0 800 430" preserveAspectRatio="none"><defs><marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="#39d5ef"/></marker></defs>
+<path class="edge active" d="M135 215 C175 215 185 215 225 215" marker-end="url(#arr)"/><path class="edge active" d="M355 215 C395 215 405 215 445 215" marker-end="url(#arr)"/><path class="edge active" d="M575 215 C620 215 620 85 665 85" marker-end="url(#arr)"/><path class="edge" d="M575 215 C620 215 620 215 665 215" marker-end="url(#arr)"/><path class="edge" d="M575 215 C620 215 620 345 665 345" marker-end="url(#arr)"/></svg>
+<div class="node n-chat selected" data-node="ChatGPT" onclick="selectNode(this)"><span class="state"></span><div class="logo">✳</div><b>ChatGPT</b><small>Instruction interface</small></div>
+<div class="node n-bridge demo" data-node="Integration Bridge" onclick="selectNode(this)"><span class="state"></span><div class="logo">⇄</div><b>Integration Bridge</b><small>Not connected · demo</small></div>
+<div class="node n-opencode demo" data-node="OpenCode" onclick="selectNode(this)"><span class="state"></span><div class="logo">⌘</div><b>OpenCode</b><small>Agent runtime · demo</small></div>
+<div class="node n-model demo" data-node="AI Model Provider" onclick="selectNode(this)"><span class="state"></span><div class="logo">✧</div><b>AI Model</b><small>Provider endpoint</small></div>
+<div class="node n-mcp demo" data-node="MCP Server" onclick="selectNode(this)"><span class="state"></span><div class="logo">⬡</div><b>MCP Server</b><small>Tools & resources</small></div>
+<div class="node n-kali demo" data-node="Kali Linux" onclick="selectNode(this)"><span class="state"></span><div class="logo">▣</div><b>Kali Linux</b><small>Development host</small></div>
+</div>
+<div class="graph-legend"><span><i class="legend-dot" style="background:var(--cyan)"></i>Active (simulated)</span><span><i class="legend-dot" style="background:var(--green)"></i>Available</span><span><i class="legend-dot" style="background:var(--amber)"></i>Demo / pending</span><span style="margin-left:auto">Drag & select nodes · preview</span></div>
+<div class="composer"><input id="task" placeholder="Describe una tarea para tu ecosistema..." /><button class="btn primary" onclick="sendTask()">Enviar tarea ↗</button></div>
+</div>
+<div class="rightstack">
+<div class="panel mini"><h3>Service health</h3><div class="health"><span>ChatGPT UI</span><span>Available</span></div><div class="health"><span>Local bridge</span><span style="color:var(--amber)">Pending</span></div><div class="health"><span>OpenCode runtime</span><span style="color:var(--amber)">Unverified</span></div><div class="health"><span>MCP registry</span><span style="color:var(--amber)">Unverified</span></div><div class="health"><span>Kali host</span><span style="color:var(--amber)">Unverified</span></div></div>
+<div class="panel mini"><h3>Recent activity <span style="color:var(--muted);font-weight:400">· sample events</span></h3><div class="event"><i></i><div><b>Workflow initialized</b><small>Command Center · just now</small></div></div><div class="event"><i style="background:var(--violet)"></i><div><b>OpenCode node registered</b><small>Demo topology · 2 min ago</small></div></div><div class="event"><i style="background:var(--amber)"></i><div><b>Bridge awaiting setup</b><small>Local agent · pending</small></div></div></div>
+</div>
+</div>
+</main>
+<section class="inspector"><div class="inspect-title"><h2>NODE INSPECTOR</h2><span class="tag">SELECTED</span></div><div class="selected-card"><div class="selected-logo" id="selLogo">✳</div><h3 id="selName">ChatGPT</h3><p id="selDesc">Instruction interface</p></div><div class="field"><label>Connection status</label><span id="selStatus">UI available · no local bridge</span></div><div class="field"><label>Role</label><span id="selRole">Natural language request origin</span></div><div class="field"><label>Endpoint</label><span>Not configured</span></div><div class="field"><label>Permissions</label><span>Read-only preview</span></div><div class="field"><label>Last event</label><span>Demo topology loaded</span></div><div style="margin-top:17px;font-size:10px;color:var(--muted);letter-spacing:1px">EVENT LOG</div><div class="logline">[INFO] UI initialized</div><div class="logline">[DEMO] Sample topology rendered</div><div class="logline">[WAIT] Local bridge connection</div><button class="btn" style="width:100%;margin-top:15px" onclick="toast('La conexión real se habilitará en la fase de integración')">Configure connection</button></section>
+</div><div class="toast" id="toast"></div>
+<script>
+const details={
+"ChatGPT":["✳","Instruction interface","UI available · no local bridge","Natural language request origin"],
+"Integration Bridge":["⇄","Secure local connector","Not connected","Authenticated transport between UI and local services"],
+"OpenCode":["⌘","Agent runtime","Unverified","Executes development tasks, agents and MCP tools"],
+"AI Model Provider":["✧","Model endpoint","Unverified","Inference provider selected by OpenCode"],
+"MCP Server":["⬡","Tool server","Unverified","Exposes tools and resources to OpenCode"],
+"Kali Linux":["▣","Development host","Unverified","Local operating system and services"]
+};
+function togglePanel(which){
+ const app=document.querySelector('.app');
+ const isMobile=window.matchMedia('(max-width: 720px)').matches;
+ const cls=isMobile?(which==='sidebar'?'sidebar-open-mobile':'inspector-open-mobile'):(which==='sidebar'?'sidebar-collapsed':'inspector-collapsed');
+ app.classList.toggle(cls);
+ const btn=document.getElementById(which==='sidebar'?'toggleSidebar':'toggleInspector');
+ const open=isMobile?app.classList.contains(cls):!app.classList.contains(cls);
+ btn.setAttribute('aria-pressed',String(!open));
+ btn.innerHTML=which==='sidebar'?(open?'☰ Ocultar menú':'☰ Menú'):(open?'◫ Ocultar inspector':'◫ Inspector');
+}
+function syncPanelButtons(){
+ const mobile=window.matchMedia('(max-width: 720px)').matches;
+ const app=document.querySelector('.app');
+ for(const [which,cls] of [['sidebar',mobile?'sidebar-open-mobile':'sidebar-collapsed'],['inspector',mobile?'inspector-open-mobile':'inspector-collapsed']]){
+  const btn=document.getElementById(which==='sidebar'?'toggleSidebar':'toggleInspector');
+  const open=mobile?app.classList.contains(cls):!app.classList.contains(cls);
+  btn.setAttribute('aria-pressed',String(!open));
+  btn.innerHTML=which==='sidebar'?(open?'☰ Ocultar menú':'☰ Menú'):(open?'◫ Ocultar inspector':'◫ Inspector');
+ }
+}
+window.addEventListener('resize',syncPanelButtons);syncPanelButtons();
+function selectNode(el){document.querySelectorAll('.node').forEach(n=>n.classList.remove('selected'));el.classList.add('selected');let d=details[el.dataset.node];document.getElementById('selLogo').textContent=d[0];document.getElementById('selName').textContent=el.dataset.node;document.getElementById('selDesc').textContent=d[1];document.getElementById('selStatus').textContent=d[2];document.getElementById('selRole').textContent=d[3]}
+function toast(t){let e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2600)}
+function sendTask(){let v=document.getElementById('task').value.trim();if(!v){toast('Escribe una tarea primero');return}toast('Vista previa: el puente local no está conectado. No se ejecutó ningún comando.');}
+</script>
+</body></html>
