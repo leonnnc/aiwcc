@@ -37,3 +37,4 @@ jobs:
           Path("/tmp/aiwcc-inline.js").write_text("\n".join(scripts), encoding="utf-8")
           PY
           node --check /tmp/aiwcc-inline.js
+          node --check .opencode/plugins/aiwcc-telemetry.js
