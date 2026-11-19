@@ -27,6 +27,34 @@ main{padding:22px;min-width:0;overflow:hidden}.pagehead{display:flex;justify-con
 @media(max-width:720px){.app{display:grid;grid-template-columns:0 minmax(0,1fr) 0;grid-template-rows:66px 1fr}.app.sidebar-open-mobile{grid-template-columns:205px minmax(0,1fr) 0}.app.inspector-open-mobile{grid-template-columns:0 minmax(0,1fr) 280px}.app.sidebar-open-mobile.inspector-open-mobile{grid-template-columns:205px minmax(0,1fr) 280px}.app aside{padding:12px 8px;overflow:auto}.app:not(.sidebar-open-mobile) aside{padding:0;border:0;overflow:hidden}.app:not(.inspector-open-mobile) .inspector{display:none}.app header{grid-column:1/4}header{position:sticky;top:0}.header-right .pill:nth-child(2){display:none}main{padding:15px}.stats{grid-template-columns:repeat(2,1fr)}.workspace{display:block}.rightstack{display:block;margin-top:12px}.graph{height:470px}.node{width:112px}.n-chat{left:3%;top:37%}.n-bridge{left:29%;top:37%}.n-opencode{left:55%;top:37%}.n-model{left:58%;top:7%}.n-mcp{left:58%;top:67%}.n-kali{left:58%;top:84%}.actions{display:none}}
 
 .port{position:absolute;top:50%;width:14px;height:14px;padding:0;border-radius:50%;border:2px solid #9ab0c9;background:#15263b;transform:translateY(-50%);z-index:4;cursor:crosshair;box-shadow:0 0 0 3px #0b1422;transition:.15s}.port-in{left:-8px}.port-out{right:-8px}.port:hover,.port.pending{background:var(--cyan);border-color:#e4fbff;box-shadow:0 0 0 4px #39d5ef33,0 0 14px #39d5ef}.node.connect-source{border-color:var(--cyan);box-shadow:0 0 0 2px #39d5ef55,0 0 22px #39d5ef44}#edgesSvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}.edge{fill:none;stroke:#526d8d;stroke-width:2;opacity:.95}.edge.active{stroke:var(--cyan);stroke-dasharray:7 7;animation:dash 1.1s linear infinite;filter:drop-shadow(0 0 4px #39d5ef)}.node{touch-action:none;user-select:none}.node .logo,.node b,.node small{pointer-events:none}
+
+/* AIWCC icon-first topology: unboxed service marks with labels underneath */
+.node{
+  width:120px; min-height:96px; padding:8px 4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  gap:5px; background:transparent; border:1px solid transparent;
+  border-radius:14px; box-shadow:none; text-align:center;
+}
+.node:hover,.node.selected{
+  background:transparent; border-color:transparent;
+  box-shadow:none; transform:translateY(-2px);
+}
+.node .logo{
+  width:62px; height:62px; margin:0; display:grid; place-items:center;
+  font-size:42px; line-height:1; border:0; border-radius:0;
+  background:transparent; filter:drop-shadow(0 5px 12px #0008);
+  transition:filter .18s ease, transform .18s ease;
+}
+.node:hover .logo,.node.selected .logo{
+  filter:drop-shadow(0 0 9px #39d5ef88) drop-shadow(0 5px 12px #0008);
+  transform:scale(1.07);
+}
+.node b{display:block; font-size:11px; font-weight:700; line-height:1.25; color:#e8f0fb}
+.node small{display:none}
+.node .state{right:17px;top:12px}
+.node .port-in{left:0}
+.node .port-out{right:0}
+
 </style>
 </head>
 <body>
@@ -61,12 +89,12 @@ main{padding:22px;min-width:0;overflow:hidden}.pagehead{display:flex;justify-con
 <div class="panel-head"><strong>◈ &nbsp; LIVE WORKFLOW TOPOLOGY</strong><span><i class="dot"></i> DEMO TELEMETRY</span></div>
 <div class="graph" id="graph">
 <svg id="edgesSvg" aria-hidden="true"></svg>
-<div class="node n-chat selected" data-node="ChatGPT" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: ChatGPT" aria-label="Punto de entrada ChatGPT"></button><button class="port port-out" data-port="out" title="Salida: ChatGPT" aria-label="Punto de salida ChatGPT"></button><div class="logo">✳</div><b>ChatGPT</b><small>Instruction interface</small></div><b>ChatGPT</b><small>Instruction interface</small></div>
-<div class="node n-bridge demo" data-node="Integration Bridge" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: Integration Bridge" aria-label="Punto de entrada Integration Bridge"></button><button class="port port-out" data-port="out" title="Salida: Integration Bridge" aria-label="Punto de salida Integration Bridge"></button><div class="logo">⇄</div><b>Integration Bridge</b><small>Not connected · demo</small></div><b>Integration Bridge</b><small>Not connected · demo</small></div>
-<div class="node n-opencode demo" data-node="OpenCode" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: OpenCode" aria-label="Punto de entrada OpenCode"></button><button class="port port-out" data-port="out" title="Salida: OpenCode" aria-label="Punto de salida OpenCode"></button><div class="logo">⌘</div><b>OpenCode</b><small>Agent runtime · demo</small></div><b>OpenCode</b><small>Agent runtime · demo</small></div>
-<div class="node n-model demo" data-node="AI Model Provider" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: AI Model Provider" aria-label="Punto de entrada AI Model Provider"></button><button class="port port-out" data-port="out" title="Salida: AI Model Provider" aria-label="Punto de salida AI Model Provider"></button><div class="logo">✧</div><b>AI Model Provider</b><small>Provider endpoint</small></div><b>AI Model</b><small>Provider endpoint</small></div>
-<div class="node n-mcp demo" data-node="MCP Server" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: MCP Server" aria-label="Punto de entrada MCP Server"></button><button class="port port-out" data-port="out" title="Salida: MCP Server" aria-label="Punto de salida MCP Server"></button><div class="logo">⬡</div><b>MCP Server</b><small>Tools & resources</small></div><b>MCP Server</b><small>Tools & resources</small></div>
-<div class="node n-kali demo" data-node="Kali Linux" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: Kali Linux" aria-label="Punto de entrada Kali Linux"></button><button class="port port-out" data-port="out" title="Salida: Kali Linux" aria-label="Punto de salida Kali Linux"></button><div class="logo">▣</div><b>Kali Linux</b><small>Development host</small></div><b>Kali Linux</b><small>Development host</small></div>
+<div class="node n-chat selected" data-node="ChatGPT" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: ChatGPT" aria-label="Punto de entrada ChatGPT"></button><button class="port port-out" data-port="out" title="Salida: ChatGPT" aria-label="Punto de salida ChatGPT"></button><div class="logo">✳</div><b>ChatGPT</b><small>Instruction interface</small></div>
+<div class="node n-bridge demo" data-node="Integration Bridge" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: Integration Bridge" aria-label="Punto de entrada Integration Bridge"></button><button class="port port-out" data-port="out" title="Salida: Integration Bridge" aria-label="Punto de salida Integration Bridge"></button><div class="logo">⇄</div><b>Integration Bridge</b><small>Not connected · demo</small></div>
+<div class="node n-opencode demo" data-node="OpenCode" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: OpenCode" aria-label="Punto de entrada OpenCode"></button><button class="port port-out" data-port="out" title="Salida: OpenCode" aria-label="Punto de salida OpenCode"></button><div class="logo">⌘</div><b>OpenCode</b><small>Agent runtime · demo</small></div>
+<div class="node n-model demo" data-node="AI Model Provider" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: AI Model Provider" aria-label="Punto de entrada AI Model Provider"></button><button class="port port-out" data-port="out" title="Salida: AI Model Provider" aria-label="Punto de salida AI Model Provider"></button><div class="logo">✧</div><b>AI Model Provider</b><small>Provider endpoint</small></div>
+<div class="node n-mcp demo" data-node="MCP Server" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: MCP Server" aria-label="Punto de entrada MCP Server"></button><button class="port port-out" data-port="out" title="Salida: MCP Server" aria-label="Punto de salida MCP Server"></button><div class="logo">⬡</div><b>MCP Server</b><small>Tools & resources</small></div>
+<div class="node n-kali demo" data-node="Kali Linux" onclick="selectNode(this)"><span class="state"></span><button class="port port-in" data-port="in" title="Entrada: Kali Linux" aria-label="Punto de entrada Kali Linux"></button><button class="port port-out" data-port="out" title="Salida: Kali Linux" aria-label="Punto de salida Kali Linux"></button><div class="logo">▣</div><b>Kali Linux</b><small>Development host</small></div>
 </div>
 <div class="graph-legend"><span><i class="legend-dot" style="background:var(--cyan)"></i>Active (simulated)</span><span><i class="legend-dot" style="background:var(--green)"></i>Available</span><span><i class="legend-dot" style="background:var(--amber)"></i>Demo / pending</span><span style="margin-left:auto">Arrastra nodos · salida → entrada para conectar</span></div>
 <div class="composer"><input id="task" placeholder="Describe una tarea para tu ecosistema..." /><button class="btn primary" onclick="sendTask()">Enviar tarea ↗</button></div>
