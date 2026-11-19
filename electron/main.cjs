@@ -117,7 +117,7 @@ function stopBridge() {
   });
   child.kill("SIGTERM");
   setTimeout(() => {
-    if (child.exitCode === null && !child.killed) child.kill("SIGKILL");
+    if (child.exitCode === null) child.kill("SIGKILL");
   }, 2500).unref();
 }
 
