@@ -1,0 +1,37 @@
+import importlib.util
+import json
+import unittest
+from pathlib import Path
+from threading import Thread
+from urllib.request import urlopen
+from http.server import ThreadingHTTPServer
+
+MODULE = Path(__file__).with_name("server.py")
+spec = importlib.util.spec_from_file_location("aiwcc_bridge", MODULE)
+bridge = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bridge)
+
+class BridgeTests(unittest.TestCase):
+    def test_snapshot_has_expected_read_only_sections(self):
+        data = bridge.snapshot()
+        self.assertTrue(data["bridge"]["connected"])
+        self.assertIn("hostname", data["host"])
+        self.assertIn("installed", data["opencode"])
+        self.assertIn("configured_mcp_servers", data["opencode"])
+
+    def test_health_endpoint(self):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), bridge.Handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with urlopen(f"http://127.0.0.1:{server.server_port}/api/health", timeout=2) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            self.assertTrue(payload["ok"])
+            self.assertEqual(payload["service"], "aiwcc-bridge")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+if __name__ == "__main__":
+    unittest.main()
