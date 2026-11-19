@@ -87,6 +87,66 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         super().end_headers()
 
+    def do_POST(self):
+        request_host = self.headers.get("Host", "").split(":")[0].strip("[]").lower()
+        if request_host not in ("127.0.0.1", "localhost"):
+            self.send_error(403, "Localhost requests only")
+            return
+        if urlparse(self.path).path != "/api/telemetry":
+            self.send_error(404)
+            return
+        if self.headers.get("Content-Type", "").split(";")[0].strip().lower() != "application/json":
+            self.send_error(415, "JSON required")
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        if length < 1 or length > 4096:
+            self.send_error(413, "Invalid telemetry payload size")
+            return
+        try:
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            event_type = payload.get("type")
+            created = payload.get("created")
+            if not isinstance(event_type, str) or len(event_type) > 100:
+                raise ValueError("Invalid event type")
+            allowed = {
+                "aiwcc.plugin.ready", "session.created", "session.execution.started",
+                "session.execution.succeeded", "session.execution.failed",
+                "session.tool.called", "session.tool.success", "session.tool.failed",
+                "session.idle", "session.model.selected", "session.agent.selected",
+                "session.shell.started", "session.shell.ended", "permission.asked",
+                "permission.replied", "mcp.status.changed",
+            }
+            if event_type not in allowed:
+                self.send_error(400, "Event type not allowed")
+                return
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError, AttributeError):
+            self.send_error(400, "Invalid telemetry payload")
+            return
+        titles = {
+            "aiwcc.plugin.ready": "OpenCode telemetry connected",
+            "session.created": "OpenCode session created",
+            "session.execution.started": "Agent execution started",
+            "session.execution.succeeded": "Agent execution completed",
+            "session.execution.failed": "Agent execution failed",
+            "session.tool.called": "OpenCode tool invoked",
+            "session.tool.success": "OpenCode tool completed",
+            "session.tool.failed": "OpenCode tool failed",
+            "session.idle": "OpenCode session idle",
+            "session.model.selected": "Model selected",
+            "session.agent.selected": "Agent selected",
+            "session.shell.started": "Shell operation started",
+            "session.shell.ended": "Shell operation ended",
+            "permission.asked": "Permission requested",
+            "permission.replied": "Permission response recorded",
+            "mcp.status.changed": "MCP status changed",
+        }
+        level = "error" if event_type.endswith(".failed") else "info"
+        event(level, titles.get(event_type, event_type), "OpenCode live event · " + event_type)
+        return self.send_json({"accepted": True})
+
     def do_GET(self):
         request_host = self.headers.get("Host", "").split(":")[0].strip("[]").lower()
         if request_host not in ("127.0.0.1", "localhost"):
