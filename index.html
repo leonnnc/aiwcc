@@ -65,7 +65,7 @@ body.connecting .node .port-in{opacity:1;pointer-events:auto}
 </head>
 <body>
 <div class="app">
-<header><div class="brand"><div class="brandmark">✣</div><div>AI WORKFLOW <span style="color:var(--cyan)">COMMAND CENTER</span></div></div><div class="header-tools"><button class="panel-toggle" id="toggleSidebar" aria-pressed="false" onclick="togglePanel('sidebar')" title="Contraer o abrir menú lateral">☰ Menú</button><button class="panel-toggle" id="toggleInspector" aria-pressed="false" onclick="togglePanel('inspector')" title="Contraer o abrir inspector">◫ Inspector</button></div><div class="header-right"><span class="pill">⌁ &nbsp; KALI DEVELOPMENT</span><span class="pill"><i class="dot"></i>Bridge not connected</span><span>◉ &nbsp; ADMIN</span></div></header>
+<header><div class="brand"><div class="brandmark">✣</div><div>AI WORKFLOW <span style="color:var(--cyan)">COMMAND CENTER</span></div></div><div class="header-tools"><button class="panel-toggle" id="toggleSidebar" aria-pressed="false" onclick="togglePanel('sidebar')" title="Contraer o abrir menú lateral">☰ Menú</button><button class="panel-toggle" id="toggleInspector" aria-pressed="false" onclick="togglePanel('inspector')" title="Contraer o abrir inspector">◫ Inspector</button></div><div class="header-right"><span class="pill">⌁ &nbsp; KALI DEVELOPMENT</span><span class="pill" id="bridgeBadge"><i class="dot"></i>Bridge not connected</span><span>◉ &nbsp; ADMIN</span></div></header>
 <aside>
 <div class="section-label">OPERATIONS</div>
 <div class="nav active"><span class="ico">◈</span> Command Center</div>
@@ -85,10 +85,10 @@ body.connecting .node .port-in{opacity:1;pointer-events:auto}
 <main>
 <div class="pagehead"><div><div class="eyebrow">OPERATIONS OVERVIEW / 01</div><h1>AI Workflow Command Center</h1><div class="sub">Orquestación, conexiones y observabilidad de tu ecosistema de desarrollo.</div></div><div class="actions"><button class="btn" onclick="toast('Vista ajustada al mapa completo')">⊞ Fit view</button><button class="btn primary" onclick="toast('El puente local todavía no está conectado')">＋ New workflow</button></div></div>
 <div class="stats">
-<div class="stat"><div class="stat-top">Active workflows <span>⌁</span></div><div class="stat-num">03</div><div class="stat-foot"><span class="up">●</span> Datos de demostración</div></div>
-<div class="stat"><div class="stat-top">Connected services <span>◈</span></div><div class="stat-num">07</div><div class="stat-foot">Inventario ilustrativo</div></div>
-<div class="stat"><div class="stat-top">MCP servers <span>⬡</span></div><div class="stat-num">04</div><div class="stat-foot">No verificado en Kali</div></div>
-<div class="stat"><div class="stat-top">Failed operations <span>△</span></div><div class="stat-num">01</div><div class="stat-foot">Evento de ejemplo</div></div>
+<div class="stat"><div class="stat-top">Host status <span>⌁</span></div><div class="stat-num" id="hostStat">—</div><div class="stat-foot" id="hostFoot">Esperando puente local</div></div>
+<div class="stat"><div class="stat-top">OpenCode <span>◈</span></div><div class="stat-num" id="opencodeStat">—</div><div class="stat-foot" id="opencodeFoot">Sin verificar</div></div>
+<div class="stat"><div class="stat-top">MCP configurados <span>⬡</span></div><div class="stat-num" id="mcpStat">—</div><div class="stat-foot">Declarados en configuración local</div></div>
+<div class="stat"><div class="stat-top">Bridge uptime <span>◷</span></div><div class="stat-num" id="uptimeStat">—</div><div class="stat-foot" id="bridgeFoot">No conectado</div></div>
 </div>
 <div class="workspace">
 <div class="panel">
@@ -106,8 +106,8 @@ body.connecting .node .port-in{opacity:1;pointer-events:auto}
 <div class="composer"><input id="task" placeholder="Describe una tarea para tu ecosistema..." /><button class="btn primary" onclick="sendTask()">Enviar tarea ↗</button></div>
 </div>
 <div class="rightstack">
-<div class="panel mini"><h3>Service health</h3><div class="health"><span>ChatGPT UI</span><span>Available</span></div><div class="health"><span>Local bridge</span><span style="color:var(--amber)">Pending</span></div><div class="health"><span>OpenCode runtime</span><span style="color:var(--amber)">Unverified</span></div><div class="health"><span>MCP registry</span><span style="color:var(--amber)">Unverified</span></div><div class="health"><span>Kali host</span><span style="color:var(--amber)">Unverified</span></div></div>
-<div class="panel mini"><h3>Recent activity <span style="color:var(--muted);font-weight:400">· sample events</span></h3><div class="event"><i></i><div><b>Workflow initialized</b><small>Command Center · just now</small></div></div><div class="event"><i style="background:var(--violet)"></i><div><b>OpenCode node registered</b><small>Demo topology · 2 min ago</small></div></div><div class="event"><i style="background:var(--amber)"></i><div><b>Bridge awaiting setup</b><small>Local agent · pending</small></div></div></div>
+<div class="panel mini"><h3>Service health</h3><div class="health"><span>AIWCC local bridge</span><span id="healthBridge" style="color:var(--amber)">Disconnected</span></div><div class="health"><span>OpenCode installed</span><span id="healthOpenCode" style="color:var(--amber)">Unverified</span></div><div class="health"><span>OpenCode process</span><span id="healthProcess" style="color:var(--amber)">Unverified</span></div><div class="health"><span>MCP configuration</span><span id="healthMcp" style="color:var(--amber)">Unverified</span></div><div class="health"><span>Kali host</span><span id="healthHost" style="color:var(--amber)">Unverified</span></div></div>
+<div class="panel mini"><h3>Recent activity <span id="activityMode" style="color:var(--muted);font-weight:400">· esperando eventos</span></h3><div id="activityList"><div class="event"><i style="background:var(--amber)"></i><div><b>Bridge not connected</b><small>Inicia bridge/server.py en Kali</small></div></div></div></div>
 </div>
 </div>
 </main>
@@ -115,7 +115,7 @@ body.connecting .node .port-in{opacity:1;pointer-events:auto}
 </div><div class="toast" id="toast"></div>
 <script>
 const details={"ChatGPT":["✳","Instruction interface","UI available · no local bridge","Natural language request origin"],"Integration Bridge":["⇄","Secure local connector","Not connected","Authenticated transport between UI and local services"],"OpenCode":["⌘","Agent runtime","Unverified","Executes development tasks, agents and MCP tools"],"AI Model Provider":["✧","Model endpoint","Unverified","Inference provider selected by OpenCode"],"MCP Server":["⬡","Tool server","Unverified","Exposes tools and resources to OpenCode"],"Kali Linux":["▣","Development host","Unverified","Local operating system and services"]};
-const graph=document.getElementById('graph'),svg=document.getElementById('edgesSvg');let pendingOutput=null,connections=[];
+const graph=document.getElementById('graph'),svg=document.getElementById('edgesSvg');let pendingOutput=null,connections=[{from:"ChatGPT",to:"Integration Bridge"},{from:"Integration Bridge",to:"OpenCode"},{from:"OpenCode",to:"AI Model Provider"},{from:"OpenCode",to:"MCP Server"},{from:"OpenCode",to:"Kali Linux"}];
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.style.display='block';clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>e.style.display='none',2600)}
 function togglePanel(which){const app=document.querySelector('.app'),mobile=matchMedia('(max-width: 720px)').matches,cls=mobile?(which==='sidebar'?'sidebar-open-mobile':'inspector-open-mobile'):(which==='sidebar'?'sidebar-collapsed':'inspector-collapsed');app.classList.toggle(cls);const btn=document.getElementById(which==='sidebar'?'toggleSidebar':'toggleInspector'),open=mobile?app.classList.contains(cls):!app.classList.contains(cls);btn.setAttribute('aria-pressed',String(!open));btn.innerHTML=which==='sidebar'?(open?'☰ Ocultar menú':'☰ Menú'):(open?'◫ Ocultar inspector':'◫ Inspector');requestAnimationFrame(drawConnections)}
 function syncPanelButtons(){const mobile=matchMedia('(max-width: 720px)').matches,app=document.querySelector('.app');for(const [w,c] of [['sidebar',mobile?'sidebar-open-mobile':'sidebar-collapsed'],['inspector',mobile?'inspector-open-mobile':'inspector-collapsed']]){const b=document.getElementById(w==='sidebar'?'toggleSidebar':'toggleInspector'),o=mobile?app.classList.contains(c):!app.classList.contains(c);b.setAttribute('aria-pressed',String(!o));b.innerHTML=w==='sidebar'?(o?'☰ Ocultar menú':'☰ Menú'):(o?'◫ Ocultar inspector':'◫ Inspector')}requestAnimationFrame(drawConnections)}
@@ -129,5 +129,52 @@ function drawConnections(){if(!graph||!svg)return;const r=graph.getBoundingClien
 let drag=null;document.querySelectorAll('.node').forEach(n=>{n.addEventListener('pointerdown',e=>{if(e.target.closest('.port')||e.button!==0)return;const nr=n.getBoundingClientRect(),gr=graph.getBoundingClientRect();drag={node:n,x:e.clientX,y:e.clientY,left:nr.left-gr.left,top:nr.top-gr.top,moved:false};n.setPointerCapture(e.pointerId);e.preventDefault()});n.addEventListener('pointermove',e=>{if(!drag||drag.node!==n)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;n.style.left=Math.max(0,Math.min(graph.clientWidth-n.offsetWidth,drag.left+dx))+'px';n.style.top=Math.max(0,Math.min(graph.clientHeight-n.offsetHeight,drag.top+dy))+'px';drawConnections()});n.addEventListener('pointerup',()=>{if(drag&&drag.node===n){if(drag.moved)saveGraph();drag=null}});n.addEventListener('pointercancel',()=>drag=null)});
 loadGraph();requestAnimationFrame(()=>{drawConnections();setTimeout(drawConnections,250)});window.addEventListener('resize',drawConnections);
 function sendTask(){const v=document.getElementById('task').value.trim();if(!v){toast('Escribe una tarea primero');return}toast('El puente local no está conectado. No se ejecutó ningún comando.')}
+
+const bridgeUi={lastEvents:"",connected:false};
+function setHealth(id,label,good){const el=document.getElementById(id);if(!el)return;el.textContent=label;el.style.color=good?'var(--green)':'var(--amber)'}
+function renderBridge(data){
+  bridgeUi.connected=true;
+  const badge=document.getElementById('bridgeBadge');badge.innerHTML='<i class="dot"></i>Bridge connected';
+  document.querySelector('.side-foot strong').textContent='Local bridge connected';
+  document.querySelector('.side-foot .tag').textContent='LOCAL MODE';
+  document.querySelector('.side-foot .tag').style.background='#17372f';document.querySelector('.side-foot .tag').style.color='var(--green)';
+  document.getElementById('hostStat').textContent='Online';
+  document.getElementById('hostFoot').textContent=data.host.hostname+' · '+data.host.system+' '+data.host.release;
+  const oc=data.opencode;
+  document.getElementById('opencodeStat').textContent=oc.installed?'Installed':'Missing';
+  document.getElementById('opencodeFoot').textContent=oc.version||'No se detectó el ejecutable';
+  document.getElementById('mcpStat').textContent=String(oc.configured_mcp_servers);
+  document.getElementById('uptimeStat').textContent=Math.floor(data.bridge.uptime_seconds/60)+'m';
+  document.getElementById('bridgeFoot').textContent='v'+data.bridge.version+' · lectura local';
+  setHealth('healthBridge','Connected',true);setHealth('healthHost',data.host.hostname,true);
+  setHealth('healthOpenCode',oc.installed?'Installed':'Not found',oc.installed);
+  setHealth('healthProcess',oc.running?'Running':'Not detected',oc.running);
+  setHealth('healthMcp',oc.configured_mcp_servers+' configured · health not checked',oc.configured_mcp_servers>0);
+  document.getElementById('activityMode').textContent='· eventos locales';
+  const events=data.events||[];
+  const fingerprint=JSON.stringify(events);
+  if(fingerprint!==bridgeUi.lastEvents){
+    bridgeUi.lastEvents=fingerprint;
+    const list=document.getElementById('activityList');list.replaceChildren();
+    if(!events.length){const empty=document.createElement('div');empty.className='event';empty.textContent='Sin eventos nuevos.';list.appendChild(empty)}
+    events.slice(0,6).forEach(ev=>{const row=document.createElement('div');row.className='event';const dot=document.createElement('i');dot.style.background=ev.level==='error'?'var(--red)':ev.level==='warning'?'var(--amber)':'var(--cyan)';const body=document.createElement('div');const title=document.createElement('b');title.textContent=ev.title;const detail=document.createElement('small');detail.textContent=(ev.detail||'')+' · '+new Date(ev.time).toLocaleTimeString();body.append(title,detail);row.append(dot,body);list.appendChild(row)});
+  }
+  const n=document.querySelector('.node[data-node="Kali Linux"]');if(n)n.classList.remove('demo');
+  const bridgeNode=document.querySelector('.node[data-node="Integration Bridge"]');if(bridgeNode)bridgeNode.classList.remove('demo');
+  const opNode=document.querySelector('.node[data-node="OpenCode"]');if(opNode)opNode.classList.toggle('demo',!oc.installed);
+}
+function bridgeDisconnected(){
+  if(bridgeUi.connected){bridgeUi.connected=false;toast('Se perdió la conexión con AIWCC Bridge')}
+  const badge=document.getElementById('bridgeBadge');badge.innerHTML='<i class="dot" style="background:var(--amber)"></i>Bridge not connected';
+  document.querySelector('.side-foot strong').textContent='Local bridge pending';
+  document.querySelector('.side-foot .tag').textContent='DEMO MODE';
+  document.getElementById('hostStat').textContent='—';document.getElementById('hostFoot').textContent='Esperando puente local';
+  document.getElementById('opencodeStat').textContent='—';document.getElementById('opencodeFoot').textContent='Sin verificar';
+  document.getElementById('mcpStat').textContent='—';document.getElementById('uptimeStat').textContent='—';document.getElementById('bridgeFoot').textContent='No conectado';
+  setHealth('healthBridge','Disconnected',false);setHealth('healthHost','Unverified',false);setHealth('healthOpenCode','Unverified',false);setHealth('healthProcess','Unverified',false);setHealth('healthMcp','Unverified',false);
+}
+async function pollBridge(){try{const response=await fetch('/api/status',{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();if(!data.bridge||!data.host||!data.opencode)throw new Error('Invalid bridge response');renderBridge(data)}catch(e){bridgeDisconnected()}}
+pollBridge();setInterval(pollBridge,4000);
+
 </script>
 </body></html>
