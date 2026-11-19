@@ -1,34 +1,67 @@
 # AI Workflow Command Center (AIWCC)
 
-Panel web inicial para visualizar y administrar un ecosistema de desarrollo con Kali Linux, OpenCode, modelos de IA, proveedores, MCP e integraciones.
+AIWCC es una central local de observabilidad para el entorno de desarrollo: host Kali, OpenCode, proveedores, modelos, servidores MCP e integraciones.
 
-## Estado actual
+## Estado de esta versión
 
-Esta versión es un **prototipo frontend estático**. Incluye:
-- Panel lateral izquierdo e inspector derecho contraíbles.
-- Vista de topología con nodos seleccionables.
-- Indicadores, estado de servicios y actividad de demostración.
-- Diseño adaptable a escritorio y pantallas pequeñas.
+La interfaz web incluye:
+- Topología visual con nodos, conexiones múltiples y enlaces SVG.
+- Movimiento de nodos, selección de puertos de entrada/salida y persistencia local del diagrama.
+- Panel de navegación e inspector contraíbles.
+- Estado del host y OpenCode obtenido desde el Bridge local.
+- Actividad basada en eventos permitidos enviados por el plugin de OpenCode.
 
-## Limitaciones conocidas
+La aplicación de escritorio Electron para Linux x64 está configurada en `package.json` y `electron/`. El workflow de GitHub Actions valida el código, ejecuta pruebas del Bridge y genera paquetes AppImage y DEB.
 
-- Los datos y eventos de la topología son demostrativos.
-- El puente local todavía no está conectado.
-- Los nodos aún no implementan el editor completo de workflows (arrastrar, conectar, zoom, persistencia).
-- No ejecuta comandos en Kali ni se conecta a OpenCode.
+## Alcance y límites
 
-## Ejecutar localmente
+- El Bridge es de observabilidad local y solo lectura: no ejecuta comandos, no lanza workflows ni modifica OpenCode.
+- El número MCP mostrado corresponde a servidores declarados en la configuración; no certifica que estén conectados o saludables.
+- La telemetría depende de instalar el plugin y reiniciar OpenCode.
+- La topología es una representación visual editable; no implica que cada línea sea una conexión de red real.
+- La versión actual no incluye actualizador automático ni firma de paquetes.
 
-Abre `index.html` en un navegador. No requiere dependencias para esta versión estática.
+## Ejecutar como aplicación de escritorio
 
-## Próximas etapas
+Requisitos: Kali Linux x86_64, Node.js 20+, npm y Python 3.
 
-1. Editor visual de nodos: arrastrar y soltar, puertos de conexión y múltiples enlaces.
-2. Persistencia de posiciones y conexiones.
-3. Backend/puente local autenticado para telemetría y acciones autorizadas.
-4. Integración real con OpenCode, MCP y servicios del entorno Kali.
-5. Registro de eventos, permisos, auditoría y pruebas.
+```bash
+npm install
+npm start
+```
+
+## Generar instaladores
+
+```bash
+npm install
+npm run dist:linux
+```
+
+Los artefactos se generan en `dist/`:
+- `AIWCC-*.AppImage`
+- `aiwcc_*_amd64.deb`
+
+Consulta [DESKTOP.md](DESKTOP.md) para instalar y ejecutar los paquetes.
+
+## Bridge y telemetría
+
+```bash
+python3 bridge/server.py
+```
+
+El servidor escucha solo en `127.0.0.1`. Para integrar eventos de OpenCode, consulta [bridge/README.md](bridge/README.md).
+
+## Desarrollo y pruebas
+
+```bash
+node --check electron/main.cjs
+python3 -m py_compile bridge/server.py bridge/test_server.py
+python3 -m unittest discover -s bridge -p 'test_*.py' -v
+npm run dist:linux
+```
+
+El workflow ejecuta estas validaciones automáticamente en cada push a `main` y al publicar una etiqueta `desktop-v*`.
 
 ## Seguridad
 
-No incluir API keys, tokens, contraseñas ni datos sensibles en el repositorio.
+No añadas API keys, tokens, contraseñas, prompts ni respuestas al repositorio. La telemetría transmite solo tipos de evento permitidos y marcas de tiempo; no reenvía contenido de prompts, respuestas, argumentos de herramientas ni credenciales.
