@@ -72,6 +72,12 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         print("[AIWCC] " + (fmt % args))
 
+    def translate_path(self, path):
+        requested = urlparse(path).path
+        if requested in ("/", "/index.html"):
+            return str(ROOT / "index.html")
+        return str(ROOT / "__aiwcc_not_found__")
+
     def end_headers(self):
         origin = self.headers.get("Origin", "")
         if origin.startswith("http://127.0.0.1:") or origin.startswith("http://localhost:"):
@@ -82,6 +88,10 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        request_host = self.headers.get("Host", "").split(":")[0].strip("[]").lower()
+        if request_host not in ("127.0.0.1", "localhost"):
+            self.send_error(403, "Localhost requests only")
+            return
         path = urlparse(self.path).path
         if path == "/api/health":
             return self.send_json({"ok": True, "service": "aiwcc-bridge", "version": "0.1.0"})
