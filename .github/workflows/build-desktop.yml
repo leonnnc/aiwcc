@@ -1,6 +1,8 @@
 name: Build AIWCC Desktop
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   push:
     tags:
