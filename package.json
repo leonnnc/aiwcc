@@ -1,0 +1,56 @@
+{
+  "name": "aiwcc-desktop",
+  "version": "0.1.0",
+  "description": "AIWCC local AI operations command center",
+  "main": "electron/main.cjs",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist:linux": "electron-builder --linux AppImage deb",
+    "dist:appimage": "electron-builder --linux AppImage",
+    "dist:deb": "electron-builder --linux deb"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.aiwcc.desktop",
+    "productName": "AIWCC",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/main.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "index.html",
+        "to": "aiwcc/index.html"
+      },
+      {
+        "from": "bridge",
+        "to": "aiwcc/bridge",
+        "filter": ["server.py"]
+      }
+    ],
+    "linux": {
+      "category": "Utility",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "synopsis": "AI operations command center",
+      "description": "Desktop command center for monitoring AIWCC, OpenCode and local integrations."
+    }
+  }
+}
