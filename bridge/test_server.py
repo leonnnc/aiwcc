@@ -33,6 +33,15 @@ class BridgeTests(unittest.TestCase):
                 payload = json.loads(response.read().decode("utf-8"))
             self.assertTrue(payload["accepted"])
             self.assertEqual(bridge.EVENTS[0]["title"], "Agent execution started")
+            ready = json.dumps({"type": "aiwcc.plugin.ready", "created": 124}).encode("utf-8")
+            ready_request = __import__("urllib.request", fromlist=["Request"]).Request(
+                f"http://127.0.0.1:{server.server_port}/api/telemetry",
+                data=ready, headers={"Content-Type": "application/json"}, method="POST"
+            )
+            with urlopen(ready_request, timeout=2) as response:
+                ready_payload = json.loads(response.read().decode("utf-8"))
+            self.assertTrue(ready_payload["accepted"])
+            self.assertEqual(bridge.EVENTS[0]["title"], "OpenCode telemetry connected")
         finally:
             server.shutdown()
             server.server_close()
