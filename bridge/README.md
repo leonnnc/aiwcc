@@ -32,3 +32,13 @@ AIWCC_PORT=8766 python3 bridge/server.py
 - La telemetría de modelos, tokens, solicitudes y respuestas requiere integraciones específicas y autenticadas; no se simula como si fuera real.
 
 Para detenerlo, usa `Ctrl+C` en la terminal donde se inició.
+
+
+## Pruebas automatizadas
+
+Desde la raíz del repositorio:
+
+```bash
+python3 -m unittest discover -s bridge -p 'test_*.py' -v
+python3 -m py_compile bridge/server.py bridge/test_server.py
+```
