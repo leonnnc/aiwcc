@@ -28,6 +28,15 @@ class BridgeTests(unittest.TestCase):
                 payload = json.loads(response.read().decode("utf-8"))
             self.assertTrue(payload["ok"])
             self.assertEqual(payload["service"], "aiwcc-bridge")
+            with urlopen(f"http://127.0.0.1:{server.server_port}/api/status", timeout=3) as response:
+                status = json.loads(response.read().decode("utf-8"))
+            self.assertIn("host", status)
+            self.assertIn("opencode", status)
+            try:
+                urlopen(f"http://127.0.0.1:{server.server_port}/bridge/server.py", timeout=2)
+                self.fail("Bridge source must not be served")
+            except Exception as error:
+                self.assertTrue(getattr(error, "code", None) == 404)
         finally:
             server.shutdown()
             server.server_close()
