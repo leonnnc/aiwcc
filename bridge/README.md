@@ -42,3 +42,21 @@ Desde la raíz del repositorio:
 python3 -m unittest discover -s bridge -p 'test_*.py' -v
 python3 -m py_compile bridge/server.py bridge/test_server.py
 ```
+
+## Telemetría real de OpenCode
+
+El repositorio incluye `.opencode/plugins/aiwcc-telemetry.js`. Para habilitar los eventos globalmente en tu instalación:
+
+```bash
+mkdir -p ~/.config/opencode/plugins
+cp .opencode/plugins/aiwcc-telemetry.js ~/.config/opencode/plugins/aiwcc-telemetry.js
+```
+
+1. Inicia primero AIWCC Bridge con `python3 bridge/server.py`.
+2. En otra terminal, reinicia el servicio de OpenCode con `opencode service restart`.
+3. Abre AIWCC en `http://127.0.0.1:8765`.
+
+El plugin escucha el flujo oficial de eventos de OpenCode y reenvía únicamente tipos de evento permitidos. No transmite prompts, respuestas, contenido de archivos, argumentos de herramientas ni credenciales. Si el puente no está disponible, la telemetría se descarta y OpenCode continúa funcionando.
+
+Eventos incluidos: sesiones, inicio/fin de ejecuciones, herramientas, cambios de agente/modelo, solicitudes de permiso, shell y cambios de estado MCP. La API de eventos de OpenCode está documentada como experimental y puede evolucionar; el plugin debe validarse contra la versión instalada. [Documentación oficial de API](https://opencode.ai/docs/api) · [Documentación de plugins](https://opencode.ai/docs/build/plugins/migrate-v1/).
+
