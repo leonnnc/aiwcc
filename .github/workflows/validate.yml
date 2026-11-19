@@ -1,0 +1,39 @@
+name: AIWCC validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Compile bridge and tests
+        run: python -m py_compile bridge/server.py bridge/test_server.py
+      - name: Run bridge tests
+        run: python -m unittest discover -s bridge -p 'test_*.py' -v
+      - name: Check inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
+          if not scripts:
+              raise SystemExit("No inline script found")
+          Path("/tmp/aiwcc-inline.js").write_text("\n".join(scripts), encoding="utf-8")
+          PY
+          node --check /tmp/aiwcc-inline.js
