@@ -1,0 +1,42 @@
+name: Build AIWCC Desktop
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "desktop-v*"
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: npm install
+      - name: Validate desktop JavaScript
+        run: node --check electron/main.cjs
+      - name: Validate bridge
+        run: |
+          python -m py_compile bridge/server.py bridge/test_server.py
+          python -m unittest discover -s bridge -p 'test_*.py' -v
+      - name: Build Linux packages
+        run: npm run dist:linux
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiwcc-linux-installers
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+          if-no-files-found: error
+          retention-days: 30
