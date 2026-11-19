@@ -19,6 +19,25 @@ class BridgeTests(unittest.TestCase):
         self.assertIn("installed", data["opencode"])
         self.assertIn("configured_mcp_servers", data["opencode"])
 
+    def test_telemetry_endpoint_accepts_allowlisted_events(self):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), bridge.Handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            body = json.dumps({"type": "session.execution.started", "created": 123}).encode("utf-8")
+            request = __import__("urllib.request", fromlist=["Request"]).Request(
+                f"http://127.0.0.1:{server.server_port}/api/telemetry",
+                data=body, headers={"Content-Type": "application/json"}, method="POST"
+            )
+            with urlopen(request, timeout=2) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            self.assertTrue(payload["accepted"])
+            self.assertEqual(bridge.EVENTS[0]["title"], "Agent execution started")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
     def test_health_endpoint(self):
         server = ThreadingHTTPServer(("127.0.0.1", 0), bridge.Handler)
         thread = Thread(target=server.serve_forever, daemon=True)
