@@ -106,7 +106,7 @@ body.connecting .node .port-in{opacity:1;pointer-events:auto}
 <div class="composer"><input id="task" placeholder="Ejecución de tareas deshabilitada: puente en modo solo lectura" disabled /><button class="btn" disabled title="El puente actual solo supervisa; no ejecuta tareas">Enviar tarea ↗</button></div>
 </div>
 <div class="rightstack">
-<div class="panel mini"><h3>Service health</h3><div class="health"><span>AIWCC local bridge</span><span id="healthBridge" style="color:var(--amber)">Disconnected</span></div><div class="health"><span>OpenCode installed</span><span id="healthOpenCode" style="color:var(--amber)">Unverified</span></div><div class="health"><span>OpenCode process</span><span id="healthProcess" style="color:var(--amber)">Unverified</span></div><div class="health"><span>MCP configuration</span><span id="healthMcp" style="color:var(--amber)">Unverified</span></div><div class="health"><span>Kali host</span><span id="healthHost" style="color:var(--amber)">Unverified</span></div></div>
+<div class="panel mini"><h3>Service health</h3><div class="health"><span>AIWCC local bridge</span><span id="healthBridge" style="color:var(--amber)">Disconnected</span></div><div class="health"><span>OpenCode installed</span><span id="healthOpenCode" style="color:var(--amber)">Unverified</span></div><div class="health"><span>OpenCode process</span><span id="healthProcess" style="color:var(--amber)">Unverified</span></div><div class="health"><span>OpenCode telemetry</span><span id="healthTelemetry" style="color:var(--amber)">Waiting</span></div><div class="health"><span>MCP configuration</span><span id="healthMcp" style="color:var(--amber)">Unverified</span></div><div class="health"><span>Kali host</span><span id="healthHost" style="color:var(--amber)">Unverified</span></div></div>
 <div class="panel mini"><h3>Recent activity <span id="activityMode" style="color:var(--muted);font-weight:400">· esperando eventos</span></h3><div id="activityList"><div class="event"><i style="background:var(--amber)"></i><div><b>Bridge not connected</b><small>Inicia bridge/server.py en Kali</small></div></div></div></div>
 </div>
 </div>
@@ -153,6 +153,8 @@ function renderBridge(data){
   setHealth('healthMcp',oc.configured_mcp_servers+' configured · health not checked',oc.configured_mcp_servers>0);
   document.getElementById('activityMode').textContent='· eventos locales';
   const events=data.events||[];
+  const telemetryReady=events.some(ev=>ev.title==="OpenCode telemetry connected");
+  setHealth('healthTelemetry',telemetryReady?'Receiving events':'Waiting for plugin',telemetryReady);
   const fingerprint=JSON.stringify(events);
   if(fingerprint!==bridgeUi.lastEvents){
     bridgeUi.lastEvents=fingerprint;
@@ -162,7 +164,7 @@ function renderBridge(data){
   }
   const n=document.querySelector('.node[data-node="Kali Linux"]');if(n)n.classList.remove('demo');
   const bridgeNode=document.querySelector('.node[data-node="Integration Bridge"]');if(bridgeNode)bridgeNode.classList.remove('demo');
-  const opNode=document.querySelector('.node[data-node="OpenCode"]');if(opNode)opNode.classList.toggle('demo',!oc.installed);
+  const opNode=document.querySelector('.node[data-node="OpenCode"]');if(opNode)opNode.classList.toggle('demo',!oc.running);
 }
 function bridgeDisconnected(){
   if(bridgeUi.connected){bridgeUi.connected=false;toast('Se perdió la conexión con AIWCC Bridge')}
@@ -172,7 +174,7 @@ function bridgeDisconnected(){
   document.getElementById('hostStat').textContent='—';document.getElementById('hostFoot').textContent='Esperando puente local';
   document.getElementById('opencodeStat').textContent='—';document.getElementById('opencodeFoot').textContent='Sin verificar';
   document.getElementById('mcpStat').textContent='—';document.getElementById('uptimeStat').textContent='—';document.getElementById('bridgeFoot').textContent='No conectado';
-  setHealth('healthBridge','Disconnected',false);setHealth('healthHost','Unverified',false);setHealth('healthOpenCode','Unverified',false);setHealth('healthProcess','Unverified',false);setHealth('healthMcp','Unverified',false);
+  setHealth('healthBridge','Disconnected',false);setHealth('healthHost','Unverified',false);setHealth('healthOpenCode','Unverified',false);setHealth('healthProcess','Unverified',false);setHealth('healthMcp','Unverified',false);setHealth('healthTelemetry','Disconnected',false);
 }
 async function pollBridge(){try{const response=await fetch('/api/status',{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();if(!data.bridge||!data.host||!data.opencode)throw new Error('Invalid bridge response');renderBridge(data)}catch(e){bridgeDisconnected()}}
 pollBridge();setInterval(pollBridge,4000);
